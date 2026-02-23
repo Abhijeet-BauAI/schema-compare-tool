@@ -1,4 +1,5 @@
 import pg from 'pg';
+import dns from 'dns';
 const { Client } = pg;
 
 /**
@@ -7,45 +8,52 @@ const { Client } = pg;
  * enums, RLS policies, functions, and triggers.
  */
 export async function extractSchema(connectionString, label = 'database') {
-    const client = new Client({ connectionString, ssl: { rejectUnauthorized: false } });
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+    // Force IPv4 — Render uses IPv6 by default which Supabase doesn't support
+    lookup: (hostname, options, callback) => {
+      dns.lookup(hostname, { ...options, family: 4 }, callback);
+    },
+  });
 
-    try {
-        await client.connect();
-        console.log(`  ✓ Connected to ${label}`);
+  try {
+    await client.connect();
+    console.log(`  ✓ Connected to ${label}`);
 
-        const [tables, columns, indexes, foreignKeys, enums, policies, functions, triggers] =
-            await Promise.all([
-                queryTables(client),
-                queryColumns(client),
-                queryIndexes(client),
-                queryForeignKeys(client),
-                queryEnums(client),
-                queryPolicies(client),
-                queryFunctions(client),
-                queryTriggers(client),
-            ]);
+    const [tables, columns, indexes, foreignKeys, enums, policies, functions, triggers] =
+      await Promise.all([
+        queryTables(client),
+        queryColumns(client),
+        queryIndexes(client),
+        queryForeignKeys(client),
+        queryEnums(client),
+        queryPolicies(client),
+        queryFunctions(client),
+        queryTriggers(client),
+      ]);
 
-        console.log(`  ✓ Extracted schema from ${label} (${tables.length} tables, ${columns.length} columns)`);
+    console.log(`  ✓ Extracted schema from ${label} (${tables.length} tables, ${columns.length} columns)`);
 
-        return { tables, columns, indexes, foreignKeys, enums, policies, functions, triggers };
-    } finally {
-        await client.end();
-    }
+    return { tables, columns, indexes, foreignKeys, enums, policies, functions, triggers };
+  } finally {
+    await client.end();
+  }
 }
 
 async function queryTables(client) {
-    const { rows } = await client.query(`
+  const { rows } = await client.query(`
     SELECT table_name, table_type,
            obj_description((quote_ident(table_schema) || '.' || quote_ident(table_name))::regclass, 'pg_class') AS comment
     FROM information_schema.tables
     WHERE table_schema = 'public'
     ORDER BY table_name
   `);
-    return rows;
+  return rows;
 }
 
 async function queryColumns(client) {
-    const { rows } = await client.query(`
+  const { rows } = await client.query(`
     SELECT table_name, column_name, ordinal_position,
            data_type, udt_name, character_maximum_length,
            numeric_precision, numeric_scale,
@@ -55,21 +63,21 @@ async function queryColumns(client) {
     WHERE table_schema = 'public'
     ORDER BY table_name, ordinal_position
   `);
-    return rows;
+  return rows;
 }
 
 async function queryIndexes(client) {
-    const { rows } = await client.query(`
+  const { rows } = await client.query(`
     SELECT schemaname, tablename, indexname, indexdef
     FROM pg_indexes
     WHERE schemaname = 'public'
     ORDER BY tablename, indexname
   `);
-    return rows;
+  return rows;
 }
 
 async function queryForeignKeys(client) {
-    const { rows } = await client.query(`
+  const { rows } = await client.query(`
     SELECT
       tc.table_name,
       tc.constraint_name,
@@ -84,11 +92,11 @@ async function queryForeignKeys(client) {
     WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema = 'public'
     ORDER BY tc.table_name, tc.constraint_name
   `);
-    return rows;
+  return rows;
 }
 
 async function queryEnums(client) {
-    const { rows } = await client.query(`
+  const { rows } = await client.query(`
     SELECT t.typname AS enum_name,
            e.enumlabel AS enum_value,
            e.enumsortorder
@@ -98,21 +106,21 @@ async function queryEnums(client) {
     WHERE n.nspname = 'public'
     ORDER BY t.typname, e.enumsortorder
   `);
-    return rows;
+  return rows;
 }
 
 async function queryPolicies(client) {
-    const { rows } = await client.query(`
+  const { rows } = await client.query(`
     SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
     FROM pg_policies
     WHERE schemaname = 'public'
     ORDER BY tablename, policyname
   `);
-    return rows;
+  return rows;
 }
 
 async function queryFunctions(client) {
-    const { rows } = await client.query(`
+  const { rows } = await client.query(`
     SELECT p.proname AS function_name,
            pg_get_function_arguments(p.oid) AS arguments,
            pg_get_function_result(p.oid) AS return_type,
@@ -130,16 +138,16 @@ async function queryFunctions(client) {
     WHERE n.nspname = 'public'
     ORDER BY p.proname
   `);
-    return rows;
+  return rows;
 }
 
 async function queryTriggers(client) {
-    const { rows } = await client.query(`
+  const { rows } = await client.query(`
     SELECT trigger_name, event_manipulation, event_object_table,
            action_statement, action_timing, action_orientation
     FROM information_schema.triggers
     WHERE trigger_schema = 'public'
     ORDER BY event_object_table, trigger_name
   `);
-    return rows;
+  return rows;
 }
