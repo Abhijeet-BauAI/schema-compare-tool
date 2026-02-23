@@ -1,5 +1,12 @@
+// Force ALL DNS lookups to use IPv4 (Render defaults to IPv6 which Supabase doesn't support)
 import dns from 'dns';
-dns.setDefaultResultOrder('ipv4first');
+const _lookup = dns.lookup.bind(dns);
+dns.lookup = (hostname, options, callback) => {
+    if (typeof options === 'function') { callback = options; options = {}; }
+    if (typeof options === 'number') { options = { family: options }; }
+    options = { ...options, family: 4 };
+    _lookup(hostname, options, callback);
+};
 
 import { createServer } from 'http';
 import { readFileSync } from 'fs';

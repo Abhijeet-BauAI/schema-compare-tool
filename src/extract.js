@@ -1,5 +1,4 @@
 import pg from 'pg';
-import dns from 'dns';
 const { Client } = pg;
 
 /**
@@ -8,14 +7,7 @@ const { Client } = pg;
  * enums, RLS policies, functions, and triggers.
  */
 export async function extractSchema(connectionString, label = 'database') {
-  const client = new Client({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
-    // Force IPv4 — Render uses IPv6 by default which Supabase doesn't support
-    lookup: (hostname, options, callback) => {
-      dns.lookup(hostname, { ...options, family: 4 }, callback);
-    },
-  });
+  const client = new Client({ connectionString, ssl: { rejectUnauthorized: false } });
 
   try {
     await client.connect();
