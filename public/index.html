@@ -4,42 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schema Compare — Database Diff Tool</title>
-    <meta name="description" content="Compare PostgreSQL/Supabase database schemas with visual diff reports">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <title>Schema Compare</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
     <style>
-        :root {
-            --bg: #0a0e17;
-            --bg-alt: #0d1220;
-            --surface: #141b2d;
-            --surface-hover: #1a2340;
-            --border: #1e2a45;
-            --border-focus: #2d3f6a;
-            --text: #e2e8f0;
-            --text-dim: #64748b;
-            --text-muted: #475569;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --green: #22c55e;
-            --green-bg: rgba(34, 197, 94, 0.08);
-            --green-border: rgba(34, 197, 94, 0.25);
-            --blue: #3b82f6;
-            --blue-bg: rgba(59, 130, 246, 0.08);
-            --blue-border: rgba(59, 130, 246, 0.25);
-            --yellow: #eab308;
-            --yellow-bg: rgba(234, 179, 8, 0.08);
-            --yellow-border: rgba(234, 179, 8, 0.25);
-            --red: #ef4444;
-            --magenta: #a855f7;
-            --cyan: #06b6d4;
-            --radius: 12px;
-            --radius-sm: 8px;
-            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -47,161 +16,83 @@
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-
-        /* ── Background effect ── */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.08), transparent),
-                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(168, 85, 247, 0.05), transparent);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .app {
-            position: relative;
-            z-index: 1;
-            max-width: 1200px;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #fff;
+            color: #1a1a1a;
+            line-height: 1.5;
+            padding: 2rem;
+            max-width: 960px;
             margin: 0 auto;
-            padding: 2rem 1.5rem;
         }
 
-        /* ── Header ── */
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #3b82f6, #a855f7, #06b6d4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p {
-            color: var(--text-dim);
-            font-size: 1rem;
-        }
-
-        /* ── Labels bar ── */
-        .labels-bar {
+        header {
             display: flex;
-            justify-content: center;
-            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 2rem;
-            flex-wrap: wrap;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e5e5;
         }
 
-        .label-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1.25rem;
-            border-radius: 100px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            letter-spacing: 0.02em;
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
         }
 
-        .label-a {
-            background: rgba(168, 85, 247, 0.1);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            color: var(--magenta);
-        }
-
-        .label-b {
-            background: rgba(6, 182, 212, 0.1);
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            color: var(--cyan);
-        }
-
-        .label-badge .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-
-        .label-a .dot {
-            background: var(--magenta);
-        }
-
-        .label-b .dot {
-            background: var(--cyan);
-        }
-
-        /* ── Refresh bar ── */
-        .action-bar {
+        .meta {
             display: flex;
-            justify-content: center;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 2.5rem;
+        }
+
+        .meta .labels {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .meta .timestamp {
+            font-size: 0.75rem;
+            color: #999;
         }
 
         .btn-refresh {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.65rem 1.5rem;
-            background: linear-gradient(135deg, var(--accent), #6366f1);
-            color: #fff;
-            border: none;
-            border-radius: 100px;
+            padding: 6px 14px;
+            font-size: 0.8rem;
             font-family: inherit;
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 500;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all var(--transition);
-            box-shadow: 0 0 20px var(--accent-glow);
+            color: #333;
         }
 
         .btn-refresh:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 30px var(--accent-glow);
-        }
-
-        .btn-refresh:active {
-            transform: translateY(0);
+            background: #eee;
         }
 
         .btn-refresh:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .btn-refresh .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #fff;
+        /* Loading & error */
+        .status {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: #888;
+        }
+
+        .status .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-top-color: #888;
             border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            display: none;
-        }
-
-        .btn-refresh.loading .spinner {
-            display: block;
-        }
-
-        .btn-refresh.loading .btn-icon {
-            display: none;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
         }
 
         @keyframes spin {
@@ -210,520 +101,334 @@
             }
         }
 
-        .timestamp-display {
-            color: var(--text-muted);
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin: 2rem 0;
+        }
+
+        .error .hint {
+            color: #92400e;
+            margin-top: 0.25rem;
+        }
+
+        /* Summary table */
+        .summary {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            font-size: 0.82rem;
+        }
+
+        .summary th {
+            text-align: left;
+            padding: 8px 12px;
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .summary td {
+            padding: 8px 12px;
+            border: 1px solid #e5e5e5;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
         }
 
-        /* ── Stats grid ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 0.75rem;
-            margin-bottom: 2.5rem;
+        .summary td.label-col {
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
         }
 
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.25rem;
-            transition: border-color var(--transition);
+        .c-green {
+            color: #16a34a;
         }
 
-        .stat-card:hover {
-            border-color: var(--border-focus);
+        .c-blue {
+            color: #2563eb;
         }
 
-        .stat-card h3 {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-dim);
-            margin-bottom: 0.75rem;
-            font-weight: 600;
+        .c-yellow {
+            color: #ca8a04;
         }
 
-        .stat-pills {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
+        .c-dim {
+            color: #999;
         }
 
-        .pill {
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .pill-a {
-            background: var(--green-bg);
-            color: var(--green);
-            border: 1px solid var(--green-border);
-        }
-
-        .pill-b {
-            background: var(--blue-bg);
-            color: var(--blue);
-            border: 1px solid var(--blue-border);
-        }
-
-        .pill-c {
-            background: var(--yellow-bg);
-            color: var(--yellow);
-            border: 1px solid var(--yellow-border);
-        }
-
-        .pill-n {
-            background: rgba(100, 116, 139, 0.08);
-            color: var(--text-dim);
-            border: 1px solid rgba(100, 116, 139, 0.15);
-        }
-
-        /* ── Sections ── */
+        /* Sections */
         .section {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
             overflow: hidden;
-            transition: border-color var(--transition);
         }
 
-        .section:hover {
-            border-color: var(--border-focus);
-        }
-
-        .section-header {
+        .section-hd {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 1rem 1.25rem;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #fafafa;
             cursor: pointer;
             user-select: none;
-            font-weight: 700;
-            font-size: 0.95rem;
-            transition: background var(--transition);
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #e5e5e5;
         }
 
-        .section-header:hover {
-            background: var(--surface-hover);
+        .section-hd .arrow {
+            font-size: 0.7rem;
+            color: #999;
+            transition: transform 0.2s;
         }
 
-        .section-header .arrow {
-            transition: transform var(--transition);
-            color: var(--text-dim);
-            font-size: 0.75rem;
-        }
-
-        .section-header.open .arrow {
+        .section-hd.open .arrow {
             transform: rotate(90deg);
         }
 
-        .section-header .badge {
-            margin-left: auto;
+        .section-hd .count {
             font-size: 0.72rem;
+            font-weight: 500;
+            color: #999;
+            font-family: 'JetBrains Mono', monospace;
+            background: #f0f0f0;
             padding: 2px 8px;
             border-radius: 100px;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
         }
 
-        .section-body {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.35s ease;
+        .section-bd {
+            display: none;
+            padding: 12px 14px;
         }
 
-        .section-body.open {
-            max-height: 5000px;
+        .section-bd.open {
+            display: block;
         }
 
-        .section-content {
-            padding: 0 1.25rem 1.25rem;
-        }
-
-        /* ── Diff items ── */
         .diff-group {
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .diff-group-title {
+            font-size: 0.78rem;
             font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.35rem;
-            border-bottom: 1px solid var(--border);
+            color: #666;
+            margin-bottom: 4px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .diff-item {
-            padding: 0.4rem 0.85rem;
+            padding: 4px 8px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            border-radius: var(--radius-sm);
-            margin-bottom: 3px;
-            border-left: 3px solid transparent;
+            font-size: 0.78rem;
+            border-radius: 4px;
+            margin-bottom: 2px;
         }
 
-        .diff-a {
-            background: var(--green-bg);
-            color: var(--green);
-            border-left-color: var(--green);
+        .di-a {
+            background: #f0fdf4;
+            color: #166534;
         }
 
-        .diff-b {
-            background: var(--blue-bg);
-            color: var(--blue);
-            border-left-color: var(--blue);
+        .di-b {
+            background: #eff6ff;
+            color: #1e40af;
         }
 
-        .diff-c {
-            background: var(--yellow-bg);
-            color: var(--yellow);
-            border-left-color: var(--yellow);
+        .di-c {
+            background: #fefce8;
+            color: #854d0e;
         }
 
-        /* ── Table diffs ── */
         .col-diff {
             width: 100%;
             border-collapse: collapse;
-            margin: 0.5rem 0;
-            font-size: 0.8rem;
+            margin: 6px 0;
+            font-size: 0.78rem;
         }
 
         .col-diff th {
             text-align: left;
-            padding: 0.5rem 0.75rem;
-            background: var(--bg-alt);
-            border: 1px solid var(--border);
-            color: var(--text-dim);
+            padding: 6px 8px;
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
             font-weight: 600;
+            color: #666;
             font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
         }
 
         .col-diff td {
-            padding: 0.5rem 0.75rem;
-            border: 1px solid var(--border);
+            padding: 6px 8px;
+            border: 1px solid #e5e5e5;
             font-family: 'JetBrains Mono', monospace;
         }
 
-        .val-a {
-            color: var(--magenta);
+        .va {
+            color: #9333ea;
         }
 
-        .val-b {
-            color: var(--cyan);
+        .vb {
+            color: #0891b2;
         }
 
-        /* ── Status states ── */
-        .status-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 300px;
-            gap: 1.5rem;
-        }
-
-        .loading-ring {
-            width: 52px;
-            height: 52px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        .status-text {
-            color: var(--text-dim);
-            font-size: 0.95rem;
-        }
-
-        .error-box {
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px solid rgba(239, 68, 68, 0.25);
-            color: var(--red);
-            padding: 1.25rem 1.5rem;
-            border-radius: var(--radius);
-            max-width: 600px;
-            text-align: center;
-            font-size: 0.9rem;
-            line-height: 1.7;
-        }
-
-        .error-box .hint {
-            color: var(--yellow);
-            margin-top: 0.5rem;
-            font-size: 0.85rem;
-        }
-
-        .empty-state {
-            color: var(--text-muted);
+        .empty {
+            color: #bbb;
             font-style: italic;
-            padding: 1.5rem;
-            text-align: center;
-            font-size: 0.85rem;
-        }
-
-        .footer {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            margin-top: 3rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border);
-        }
-
-        @media (max-width: 640px) {
-            .app {
-                padding: 1rem;
-            }
-
-            .header h1 {
-                font-size: 1.75rem;
-            }
-
-            .labels-bar {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
+            font-size: 0.82rem;
+            padding: 8px 0;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="app">
-        <header class="header">
-            <h1>Schema Compare</h1>
-            <p>PostgreSQL / Supabase database schema diff</p>
-        </header>
-
-        <div id="labels-bar" class="labels-bar" style="display:none"></div>
-
-        <div class="action-bar">
-            <button id="btn-refresh" class="btn-refresh" onclick="runCompare()">
-                <span class="spinner"></span>
-                <span class="btn-icon">⟳</span>
-                Compare Schemas
-            </button>
-            <span id="timestamp" class="timestamp-display"></span>
+    <header>
+        <h1>Schema Compare</h1>
+        <div class="meta">
+            <span id="labels" class="labels"></span>
+            <span id="ts" class="timestamp"></span>
+            <button id="btn" class="btn-refresh" onclick="run()">↻ Refresh</button>
         </div>
+    </header>
 
-        <div id="content">
-            <div class="status-container">
-                <p class="status-text">Click <strong>Compare Schemas</strong> to fetch and diff your databases.</p>
-            </div>
-        </div>
-
-        <footer class="footer">schema-compare tool</footer>
+    <div id="content">
+        <div class="status"><span class="spinner"></span> Comparing schemas...</div>
     </div>
 
     <script>
-        let isLoading = false;
+        let busy = false;
+        run(); // auto-run on load
 
-        async function runCompare() {
-            if (isLoading) return;
-            isLoading = true;
-
-            const btn = document.getElementById('btn-refresh');
+        async function run() {
+            if (busy) return;
+            busy = true;
+            const btn = document.getElementById('btn');
             const content = document.getElementById('content');
-            const tsEl = document.getElementById('timestamp');
-
-            btn.classList.add('loading');
             btn.disabled = true;
-            btn.querySelector('.btn-icon')?.remove;
-
-            content.innerHTML = `
-    <div class="status-container">
-      <div class="loading-ring"></div>
-      <p class="status-text">Connecting to databases and extracting schemas...</p>
-    </div>`;
+            content.innerHTML = '<div class="status"><span class="spinner"></span> Comparing schemas...</div>';
 
             try {
                 const res = await fetch('/api/compare');
                 const data = await res.json();
-
                 if (!res.ok || data.error) {
-                    content.innerHTML = `
-        <div class="status-container">
-          <div class="error-box">
-            <strong>Error:</strong> ${esc(data.error)}
-            ${data.hint ? `<div class="hint">${esc(data.hint)}</div>` : ''}
-          </div>
-        </div>`;
+                    content.innerHTML = `<div class="error"><strong>Error:</strong> ${esc(data.error)}${data.hint ? `<div class="hint">${esc(data.hint)}</div>` : ''}</div>`;
                     return;
                 }
-
-                // Success — render the report
                 const { diff, stats, labelA, labelB, timestamp } = data;
-
-                // Labels
-                const labelsBar = document.getElementById('labels-bar');
-                labelsBar.style.display = 'flex';
-                labelsBar.innerHTML = `
-      <span class="label-badge label-a"><span class="dot"></span>A: ${esc(labelA)}</span>
-      <span class="label-badge label-b"><span class="dot"></span>B: ${esc(labelB)}</span>`;
-
-                tsEl.textContent = `Last run: ${new Date(timestamp).toLocaleString()}`;
-
-                content.innerHTML = renderReport(diff, stats, labelA, labelB);
-                initSections();
-                btn.innerHTML = `<span class="spinner"></span><span class="btn-icon">⟳</span> Refresh`;
-
-            } catch (err) {
-                content.innerHTML = `
-      <div class="status-container">
-        <div class="error-box">
-          <strong>Network error:</strong> ${esc(err.message)}<br>
-          Make sure the server is running.
-        </div>
-      </div>`;
+                document.getElementById('labels').textContent = `${labelA} vs ${labelB}`;
+                document.getElementById('ts').textContent = new Date(timestamp).toLocaleString();
+                content.innerHTML = renderAll(diff, stats, labelA, labelB);
+            } catch (e) {
+                content.innerHTML = `<div class="error"><strong>Failed:</strong> ${esc(e.message)}</div>`;
             } finally {
-                isLoading = false;
-                btn.classList.remove('loading');
+                busy = false;
                 btn.disabled = false;
             }
         }
 
-        function renderReport(diff, stats, labelA, labelB) {
-            return `
-    ${renderStats(stats)}
-    ${renderTablesSection(diff.tables, labelA, labelB)}
-    ${renderColumnsSection(diff.columns, labelA, labelB)}
-    ${renderSimpleSection('Indexes', diff.indexes, labelA, labelB)}
-    ${renderSimpleSection('Foreign Keys', diff.foreignKeys, labelA, labelB)}
-    ${renderEnumsSection(diff.enums, labelA, labelB)}
-    ${renderSimpleSection('RLS Policies', diff.policies, labelA, labelB)}
-    ${renderSimpleSection('Functions', diff.functions, labelA, labelB)}
-    ${renderSimpleSection('Triggers', diff.triggers, labelA, labelB)}
-  `;
+        function renderAll(diff, stats, lA, lB) {
+            return summaryTable(stats) +
+                tableSection(diff.tables, lA, lB) +
+                colsSection(diff.columns, lA, lB) +
+                simpleSection('Indexes', diff.indexes, lA, lB) +
+                simpleSection('Foreign Keys', diff.foreignKeys, lA, lB) +
+                enumsSection(diff.enums, lA, lB) +
+                simpleSection('RLS Policies', diff.policies, lA, lB) +
+                simpleSection('Functions', diff.functions, lA, lB) +
+                simpleSection('Triggers', diff.triggers, lA, lB);
         }
 
-        function renderStats(s) {
-            return `<div class="stats-grid">
-    ${statCard('Tables', s.tablesOnlyA, s.tablesOnlyB, 0, s.tablesCommon)}
-    ${statCard('Columns', s.columnsOnlyA, s.columnsOnlyB, s.columnsChanged)}
-    ${statCard('Indexes', s.indexesOnlyA, s.indexesOnlyB, s.indexesChanged)}
-    ${statCard('Foreign Keys', s.fksOnlyA, s.fksOnlyB, s.fksChanged)}
-    ${statCard('Enums', s.enumsOnlyA, s.enumsOnlyB, s.enumsChanged)}
-    ${statCard('RLS Policies', s.policiesOnlyA, s.policiesOnlyB, s.policiesChanged)}
-    ${statCard('Functions', s.functionsOnlyA, s.functionsOnlyB, s.functionsChanged)}
-    ${statCard('Triggers', s.triggersOnlyA, s.triggersOnlyB, s.triggersChanged)}
-  </div>`;
+        function summaryTable(s) {
+            const row = (label, a, b, c, shared) =>
+                `<tr><td class="label-col">${label}</td>
+     <td class="${a ? 'c-green' : 'c-dim'}">${a}</td>
+     <td class="${b ? 'c-blue' : 'c-dim'}">${b}</td>
+     <td class="${c ? 'c-yellow' : 'c-dim'}">${c}</td>
+     ${shared !== undefined ? `<td class="c-dim">${shared}</td>` : '<td class="c-dim">—</td>'}</tr>`;
+            return `<table class="summary">
+    <tr><th></th><th>Only in A</th><th>Only in B</th><th>Changed</th><th>Shared</th></tr>
+    ${row('Tables', s.tablesOnlyA, s.tablesOnlyB, 0, s.tablesCommon)}
+    ${row('Columns', s.columnsOnlyA, s.columnsOnlyB, s.columnsChanged)}
+    ${row('Indexes', s.indexesOnlyA, s.indexesOnlyB, s.indexesChanged)}
+    ${row('Foreign Keys', s.fksOnlyA, s.fksOnlyB, s.fksChanged)}
+    ${row('Enums', s.enumsOnlyA, s.enumsOnlyB, s.enumsChanged)}
+    ${row('RLS Policies', s.policiesOnlyA, s.policiesOnlyB, s.policiesChanged)}
+    ${row('Functions', s.functionsOnlyA, s.functionsOnlyB, s.functionsChanged)}
+    ${row('Triggers', s.triggersOnlyA, s.triggersOnlyB, s.triggersChanged)}
+  </table>`;
         }
 
-        function statCard(title, a, b, changed, shared) {
-            return `<div class="stat-card"><h3>${title}</h3><div class="stat-pills">
-    <span class="pill pill-a">A: ${a}</span>
-    <span class="pill pill-b">B: ${b}</span>
-    ${changed ? `<span class="pill pill-c">Δ ${changed}</span>` : ''}
-    ${shared !== undefined ? `<span class="pill pill-n">= ${shared}</span>` : ''}
-  </div></div>`;
+        function tableSection(tables, lA, lB) {
+            const n = tables.onlyInA.length + tables.onlyInB.length;
+            return sec('Tables', n, `
+    ${!n ? '<div class="empty">All tables match</div>' : ''}
+    ${tables.onlyInA.length ? dg(`Only in A (${esc(lA)})`, tables.onlyInA.map(t => di('a', '+ ' + t))) : ''}
+    ${tables.onlyInB.length ? dg(`Only in B (${esc(lB)})`, tables.onlyInB.map(t => di('b', '+ ' + t))) : ''}
+  `, n > 0);
         }
 
-        function renderTablesSection(tables, labelA, labelB) {
-            const count = tables.onlyInA.length + tables.onlyInB.length;
-            const hasContent = count > 0;
-            return section('Tables', count, `
-    ${!hasContent ? '<div class="empty-state">All tables match</div>' : ''}
-    ${tables.onlyInA.length ? diffGroup(`Only in A (${esc(labelA)})`, tables.onlyInA.map(t => diffItem('a', '+ ' + t))) : ''}
-    ${tables.onlyInB.length ? diffGroup(`Only in B (${esc(labelB)})`, tables.onlyInB.map(t => diffItem('b', '+ ' + t))) : ''}
-  `, hasContent);
-        }
-
-        function renderColumnsSection(columns, labelA, labelB) {
-            const tables = Object.keys(columns);
-            const count = tables.reduce((n, t) => n + columns[t].onlyInA.length + columns[t].onlyInB.length + columns[t].changed.length, 0);
-            return section('Column Differences', count, `
-    ${!tables.length ? '<div class="empty-state">All columns match</div>' : ''}
-    ${tables.map(table => {
-                const d = columns[table];
-                return `<div class="diff-group">
-        <div class="diff-group-title">${esc(table)}</div>
-        ${d.onlyInA.map(c => diffItem('a', '[A only] ' + c)).join('')}
-        ${d.onlyInB.map(c => diffItem('b', '[B only] ' + c)).join('')}
-        ${d.changed.length ? `<table class="col-diff">
-          <tr><th>Column</th><th>Property</th><th>A</th><th>B</th></tr>
-          ${d.changed.map(ch => ch.differences.map(df =>
-                    `<tr><td>${esc(ch.column)}</td><td>${esc(df.field)}</td><td class="val-a">${esc(String(df.valueA))}</td><td class="val-b">${esc(String(df.valueB))}</td></tr>`
-                ).join('')).join('')}
-        </table>` : ''}
-      </div>`;
+        function colsSection(columns, lA, lB) {
+            const keys = Object.keys(columns);
+            const n = keys.reduce((s, t) => s + columns[t].onlyInA.length + columns[t].onlyInB.length + columns[t].changed.length, 0);
+            return sec('Column Differences', n, `
+    ${!keys.length ? '<div class="empty">All columns match</div>' : ''}
+    ${keys.map(t => {
+                const d = columns[t]; return `<div class="diff-group">
+      <div class="diff-group-title">${esc(t)}</div>
+      ${d.onlyInA.map(c => di('a', '[A] ' + c)).join('')}
+      ${d.onlyInB.map(c => di('b', '[B] ' + c)).join('')}
+      ${d.changed.length ? `<table class="col-diff"><tr><th>Column</th><th>Property</th><th>A</th><th>B</th></tr>
+        ${d.changed.map(ch => ch.differences.map(df =>
+                    `<tr><td>${esc(ch.column)}</td><td>${esc(df.field)}</td><td class="va">${esc(String(df.valueA))}</td><td class="vb">${esc(String(df.valueB))}</td></tr>`
+                ).join('')).join('')}</table>` : ''}
+    </div>`;
             }).join('')}
-  `, count > 0);
+  `, n > 0);
         }
 
-        function renderEnumsSection(enums, labelA, labelB) {
-            const count = enums.onlyInA.length + enums.onlyInB.length + enums.changed.length;
-            return section('Enums', count, `
-    ${!count ? '<div class="empty-state">All enums match</div>' : ''}
-    ${enums.onlyInA.length ? diffGroup('Only in A', enums.onlyInA.map(e => diffItem('a', '+ ' + e))) : ''}
-    ${enums.onlyInB.length ? diffGroup('Only in B', enums.onlyInB.map(e => diffItem('b', '+ ' + e))) : ''}
-    ${enums.changed.map(ch => `<div class="diff-group">
-      <div class="diff-group-title">${esc(ch.name)}</div>
-      ${diffItem('c', 'A: ' + ch.valuesA.join(', '))}
-      ${diffItem('c', 'B: ' + ch.valuesB.join(', '))}
-    </div>`).join('')}
-  `, count > 0);
+        function enumsSection(enums, lA, lB) {
+            const n = enums.onlyInA.length + enums.onlyInB.length + enums.changed.length;
+            return sec('Enums', n, `
+    ${!n ? '<div class="empty">All enums match</div>' : ''}
+    ${enums.onlyInA.length ? dg('Only in A', enums.onlyInA.map(e => di('a', '+ ' + e))) : ''}
+    ${enums.onlyInB.length ? dg('Only in B', enums.onlyInB.map(e => di('b', '+ ' + e))) : ''}
+    ${enums.changed.map(ch => `<div class="diff-group"><div class="diff-group-title">${esc(ch.name)}</div>
+      ${di('c', 'A: ' + ch.valuesA.join(', '))}${di('c', 'B: ' + ch.valuesB.join(', '))}</div>`).join('')}
+  `, n > 0);
         }
 
-        function renderSimpleSection(title, data, labelA, labelB) {
-            const count = data.onlyInA.length + data.onlyInB.length + data.changed.length;
-            return section(title, count, `
-    ${!count ? `<div class="empty-state">All ${title.toLowerCase()} match</div>` : ''}
-    ${data.onlyInA.length ? diffGroup(`Only in A (${esc(labelA)}): ${data.onlyInA.length}`, data.onlyInA.map(k => diffItem('a', '+ ' + k))) : ''}
-    ${data.onlyInB.length ? diffGroup(`Only in B (${esc(labelB)}): ${data.onlyInB.length}`, data.onlyInB.map(k => diffItem('b', '+ ' + k))) : ''}
-    ${data.changed.length ? diffGroup(`Changed: ${data.changed.length}`, data.changed.map(ch => diffItem('c', '~ ' + ch.key))) : ''}
-  `, count > 0);
+        function simpleSection(title, data, lA, lB) {
+            const n = data.onlyInA.length + data.onlyInB.length + data.changed.length;
+            return sec(title, n, `
+    ${!n ? `<div class="empty">All ${title.toLowerCase()} match</div>` : ''}
+    ${data.onlyInA.length ? dg(`Only in A (${esc(lA)})`, data.onlyInA.map(k => di('a', '+ ' + k))) : ''}
+    ${data.onlyInB.length ? dg(`Only in B (${esc(lB)})`, data.onlyInB.map(k => di('b', '+ ' + k))) : ''}
+    ${data.changed.length ? dg('Changed', data.changed.map(ch => di('c', '~ ' + ch.key))) : ''}
+  `, n > 0);
         }
 
-        // ── Render helpers ──
-        function section(title, count, body, autoOpen) {
-            const badge = count > 0
-                ? `<span class="badge pill-c">${count} diff${count !== 1 ? 's' : ''}</span>`
-                : `<span class="badge pill-n">✓ match</span>`;
+        function sec(title, count, body, open) {
             return `<div class="section">
-    <div class="section-header ${autoOpen ? 'open' : ''}" onclick="toggleSection(this)">
-      <span class="arrow">▸</span>${title}${badge}
+    <div class="section-hd ${open ? 'open' : ''}" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+      <span><span class="arrow">▸</span> ${title}</span>
+      <span class="count">${count ? count + ' diff' + (count !== 1 ? 's' : '') : '✓'}</span>
     </div>
-    <div class="section-body ${autoOpen ? 'open' : ''}">
-      <div class="section-content">${body}</div>
-    </div>
+    <div class="section-bd ${open ? 'open' : ''}">${body}</div>
   </div>`;
         }
 
-        function diffGroup(title, items) {
-            return `<div class="diff-group"><div class="diff-group-title">${title}</div>${Array.isArray(items) ? items.join('') : items}</div>`;
-        }
-
-        function diffItem(type, text) {
-            return `<div class="diff-item diff-${type}">${esc(text)}</div>`;
-        }
-
-        function toggleSection(header) {
-            header.classList.toggle('open');
-            header.nextElementSibling.classList.toggle('open');
-        }
-
-        function initSections() {
-            // Sections with diffs are auto-opened via the autoOpen param
-        }
-
-        function esc(s) {
-            const d = document.createElement('div');
-            d.textContent = String(s);
-            return d.innerHTML;
-        }
+        function dg(title, items) { return `<div class="diff-group"><div class="diff-group-title">${title}</div>${items.join('')}</div>`; }
+        function di(type, text) { return `<div class="diff-item di-${type}">${esc(text)}</div>`; }
+        function esc(s) { const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
     </script>
 </body>
 

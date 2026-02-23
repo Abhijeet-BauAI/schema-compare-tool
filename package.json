@@ -7,7 +7,7 @@
         "schema-compare": "./src/index.js"
     },
     "scripts": {
-        "start": "node src/index.js",
+        "start": "node src/server.js",
         "compare": "node src/index.js"
     },
     "dependencies": {
